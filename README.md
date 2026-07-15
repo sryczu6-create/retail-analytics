@@ -169,7 +169,7 @@ retail-analytics/
 
 ```bash
 # 1. Clone and enter the project
-git clone https://github.com/<sryczu6-create>/retail-analytics.git
+git clone https://github.com/sryczu6-create/retail-analytics.git
 cd retail-analytics
 
 # 2. Create environment and install dependencies

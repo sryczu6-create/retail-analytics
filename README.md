@@ -5,6 +5,7 @@
 **Author:** SRY YULIANTI LOBO
 📧 sryczu6@gmail.com · 🐙 [GitHub](https://github.com/sryczu6-create)
 **Live dashboard:** [View on Looker Studio](https://datastudio.google.com/reporting/6e9af8d9-ecdb-4644-8946-d8044013c349)
+
 **Tech stack:** PostgreSQL · Python (pandas, SQLAlchemy) · SQL (window functions, CTEs) · Looker Studio
 
 ![Dashboard](dashboard.png)

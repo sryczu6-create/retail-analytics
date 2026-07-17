@@ -124,7 +124,48 @@ Two profiles among best-sellers: high-margin **hero products** (Regency Cakestan
 
 ---
 
-## 6. Dashboard
+## 6. Orchestration (Apache Airflow)
+
+The ETL pipeline is orchestrated with **Apache Airflow**. The monolithic `load.py` script is decomposed into independent, retry-safe tasks, staged through Parquet files between steps so each task is stateless and can be re-run in isolation.
+
+### DAG: `retail_etl_pipeline`
+
+```
+extract → transform → build_dimensions → build_fact → load → validate
+```
+
+![Airflow DAG](airflow_success.png)
+
+| Task | Responsibility |
+|---|---|
+| `extract` | Read + merge both Excel sheets → `raw.parquet` |
+| `transform` | Clean, classify `transaction_type`, compute revenue → `clean.parquet` |
+| `build_dimensions` | Build `dim_date`, `dim_product`, `dim_customer` |
+| `build_fact` | Surrogate-key lookup → `fact_sales` |
+| `load` | Truncate + load into PostgreSQL (dimensions first, fact last) |
+| `validate` | Row-count sanity check; fails the run if `fact_sales` is empty |
+
+### Design choices
+
+- **Separate tasks over one monolithic run:** a failure in `load` retries only `load` — `extract`/`transform` (already green) are not re-run. Granular recovery.
+- **Parquet staging between tasks:** tasks are stateless and pass data through durable storage rather than Airflow XCom, which is meant for small metadata, not million-row DataFrames.
+- **Idempotency:** `load` truncates before inserting, so re-running the DAG produces identical state — safe for retries.
+- **Retries:** each task retries twice with a 1-minute delay before failing.
+- **`LocalExecutor` / standalone:** the workload is single-node; a distributed executor (Celery) would add components without benefit at this scale.
+
+### Engineering notes (real issues solved)
+
+Building this surfaced several real-world data-engineering problems, each debugged from Airflow task logs:
+
+- **Environment mismatch:** WSL shipped Python 3.14 (unsupported by Airflow); pinned a Python 3.11 virtualenv.
+- **Path portability:** relative paths broke when Airflow ran tasks from a different working directory → switched to absolute paths for the source file and `.env`.
+- **Parquet serialization:** the `Invoice` column mixes numeric IDs and cancellation codes (`C489449`); forced text columns to `string` so PyArrow could serialize them.
+- **Dependency conflicts:** `pandas` + `SQLAlchemy` version interplay broke `to_sql`; replaced it with `psycopg2.execute_values` — version-independent and faster for bulk inserts.
+
+> These are pinned in `requirements.txt` to guarantee a reproducible environment.
+---
+
+## 7. Dashboard
 
 Interactive dashboard built in **Looker Studio**: KPI cards (Net Revenue, Customers, Return Rate, AOV), monthly revenue trend, top products, RFM segments, and cohort retention.
 
@@ -139,7 +180,7 @@ Interactive dashboard built in **Looker Studio**: KPI cards (Net Revenue, Custom
 
 ---
 
-## 7. Repository Structure
+## 8. Repository Structure
 
 ```
 retail-analytics/
@@ -166,7 +207,7 @@ retail-analytics/
 
 ---
 
-## 8. How to Run
+## 9. How to Run
 
 ```bash
 # 1. Clone and enter the project
@@ -191,7 +232,7 @@ Download the dataset from [UCI](https://archive.ics.uci.edu/dataset/502/online+r
 
 ---
 
-## 9. Known Limitations
+## 10. Known Limitations
 
 - **Truncated months:** data starts 1 Dec 2009 and ends 9 Dec 2011, so Dec 2009 and Dec 2011 are partial. Year-over-year comparisons account for this.
 - **Write-offs recorded at price 0**, so inventory-loss value cannot be derived from this dataset.
@@ -200,6 +241,6 @@ Download the dataset from [UCI](https://archive.ics.uci.edu/dataset/502/online+r
 
 ---
 
-## 10. Skills Demonstrated
+## 11. Skills Demonstrated
 
 `PostgreSQL` · `Dimensional Modeling` · `Star Schema` · `ETL` · `Python` · `pandas` · `SQLAlchemy` · `SQL Window Functions` · `CTEs` · `RFM Analysis` · `Cohort Analysis` · `Looker Studio` · `Data Storytelling`

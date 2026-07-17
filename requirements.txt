@@ -1,5 +1,16 @@
-pandas
-sqlalchemy
-psycopg2-binary
-python-dotenv
-openpyxl
+# Core ETL
+pandas==2.2.3
+sqlalchemy==1.4.54
+psycopg2-binary==2.9.12
+python-dotenv==1.2.2
+openpyxl==3.1.5
+
+# Orchestration + staging
+apache-airflow==2.9.3
+pyarrow==25.0.0
+
+# Notes:
+# - Python 3.11 required (Airflow 2.9.3 does not support 3.12+).
+# - SQLAlchemy pinned to 1.4.x for Airflow 2.9.3 compatibility.
+# - Loading uses psycopg2 directly (execute_values) instead of pandas.to_sql
+#   to stay independent of pandas/SQLAlchemy version interplay.

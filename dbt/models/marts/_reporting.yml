@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: mart_sales
+    description: "Wide fact+dimension table (one big table) powering the BI dashboard."
+  - name: mart_monthly_revenue
+    description: "Monthly revenue with month-over-month growth %."
+    columns:
+      - name: year_month
+        tests: [unique, not_null]
+  - name: mart_rfm
+    description: "Per-customer RFM scores and segment (guests excluded)."
+    columns:
+      - name: customer_key
+        tests: [unique, not_null]
+  - name: mart_cohort_retention
+    description: "Cohort retention % by cohort month and month offset."

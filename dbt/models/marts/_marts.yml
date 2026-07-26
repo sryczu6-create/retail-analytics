@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Calendar date dimension, one row per day (2009-12-01 .. 2011-12-31)."
+    columns:
+      - name: date_key
+        description: "Surrogate key, YYYYMMDD integer."
+        tests: [unique, not_null]
+
+  - name: dim_product
+    description: "Product dimension, one row per stock_code."
+    columns:
+      - name: product_key
+        description: "Deterministic hash surrogate key."
+        tests: [unique, not_null]
+      - name: stock_code
+        tests: [not_null]
+
+  - name: dim_customer
+    description: >
+      Customer dimension, one row per customer_id, plus an explicit UNKNOWN
+      member for guest checkouts (source customer_id was NULL).
+    columns:
+      - name: customer_key
+        description: "Hash surrogate key ('UNKNOWN' for guests)."
+        tests: [unique, not_null]
+
+  - name: fct_sales
+    description: "Sales fact at invoice-line grain, FKs to the three dimensions."
+    columns:
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: customer_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: transaction_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['SALE', 'CANCELLATION', 'SHIPPING', 'WRITE_OFF', 'ADJUSTMENT']

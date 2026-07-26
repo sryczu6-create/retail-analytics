@@ -1,0 +1,23 @@
+name: 'retail_dbt'
+version: '1.0.0'
+config-version: 2
+
+# Menunjuk ke blok koneksi bernama 'retail_dbt' di profiles.yml
+profile: 'retail_dbt'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Aturan default per-folder:
+models:
+  retail_dbt:
+    staging:
+      +materialized: view      # staging = ringan, jadi VIEW (virtual, selalu fresh)
+    marts:
+      +materialized: table     # marts = sering di-query dashboard, jadi TABLE (materialisasi sekali)

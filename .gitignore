@@ -1,0 +1,47 @@
+# ============================================
+# Secrets & credentials — JANGAN PERNAH commit
+# ============================================
+.env
+.env.*
+*.env
+service-account*.json
+*-key.json
+gcp-key.json
+credentials.json
+secrets/
+
+# ============================================
+# Python & virtual environments
+# ============================================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.python-version
+
+# ============================================
+# dbt (artefak build, bukan source)
+# ============================================
+target/
+dbt_packages/
+logs/
+.user.yml
+profiles.yml
+
+# ============================================
+# Data files (terlalu besar / bukan source)
+# ============================================
+data/raw/
+*.xlsx
+*.parquet
+*.csv
+!data/exports/*.csv
+
+# ============================================
+# OS / editor
+# ============================================
+.DS_Store
+.vscode/
+.idea/

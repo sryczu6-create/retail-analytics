@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_online_retail
+    description: >
+      Cleaned, typed invoice lines with transaction_type classification and
+      line-level revenue. Grain: one row per invoice line.
+    columns:
+      - name: invoice_no
+        description: "Invoice id (degenerate dimension). 'C' prefix = cancellation."
+        tests:
+          - not_null
+      - name: transaction_type
+        description: "SALE, CANCELLATION, SHIPPING, WRITE_OFF, or ADJUSTMENT."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SALE', 'CANCELLATION', 'SHIPPING', 'WRITE_OFF', 'ADJUSTMENT']
+      - name: quantity
+        tests:
+          - not_null
+      - name: revenue
+        description: "quantity * unit_price, rounded to 2 decimals."
+        tests:
+          - not_null

@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw landing layer, loaded as-is from the Online Retail II Parquet file."
+    database: tokyo-epoch-226208
+    schema: raw
+    tables:
+      - name: online_retail_raw
+        description: "Union of both yearly sheets (1,067,371 rows), source columns untouched."

@@ -123,3 +123,23 @@ invoking the dbt 3.12 venv binary. Tasks are split for granular recovery (a fail
   (version-controlled, discoverable by Airflow).
 - Executed headless with `airflow dags test` (no scheduler/webserver needed on WSL):
   DagRun state = **success** (deps OK, run PASS=5, test PASS=20).
+
+---
+
+## Stage 6 — CI/CD with GitHub Actions
+
+**Objective:** run dbt build + tests automatically on every push/PR.
+
+**Workflow (`.github/workflows/ci.yml`):** on push/PR to `main`, spin up Ubuntu,
+install dbt-bigquery, authenticate to BigQuery, then `dbt build --target ci`
+(models + all 20 tests) into an isolated `analytics_ci` dataset.
+
+**Authentication & security:**
+- A least-privilege service account (`dbt-ci`, roles: `bigquery.dataEditor` +
+  `bigquery.jobUser`) — no owner/admin rights.
+- Its JSON key is stored in **GitHub Secrets** (`GCP_SA_KEY`), never in the repo.
+  `google-github-actions/auth` writes it at runtime and exports ADC; dbt's `oauth`
+  method consumes it. The key file stays out of git (verified via `.gitignore`).
+- Confirmed the **BigQuery Sandbox accepts service-account auth** — full CI at zero cost.
+
+**Result:** first run green in ~1m11s; failing tests would turn CI red and block merges.
